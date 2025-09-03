@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge"
 import { CitySelector } from "@/components/city-selector"
 import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
+import { FeaturedVetsSection } from "./featured-vets"
+import { FeaturedClinicsSection } from "./featured-clinics"
 import { Search, MapPin, Star, Clock, Phone, Shield, Users } from "lucide-react"
 
 const CatIcon = ({ className }: { className?: string }) => (
@@ -315,6 +317,68 @@ export default function HomePage() {
               <div className="text-sm text-muted-foreground">Городов</div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Service Categories */}
+      <section className="py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-6">
+            <h3 className="text-lg font-semibold text-foreground mb-2">Быстрый поиск по услугам</h3>
+            <p className="text-sm text-muted-foreground">Выберите нужную услугу для быстрого поиска</p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
+            <Badge variant="outline" className="px-4 py-2 text-sm font-medium hover:bg-primary hover:text-primary-foreground cursor-pointer transition-colors">
+              Диагностика
+            </Badge>
+            <Badge variant="outline" className="px-4 py-2 text-sm font-medium hover:bg-primary hover:text-primary-foreground cursor-pointer transition-colors">
+              Прививки
+            </Badge>
+            <Badge variant="outline" className="px-4 py-2 text-sm font-medium hover:bg-primary hover:text-primary-foreground cursor-pointer transition-colors">
+              Хирургия
+            </Badge>
+            <Badge variant="outline" className="px-4 py-2 text-sm font-medium hover:bg-primary hover:text-primary-foreground cursor-pointer transition-colors">
+              Стоматология
+            </Badge>
+            <Badge variant="outline" className="px-4 py-2 text-sm font-medium hover:bg-primary hover:text-primary-foreground cursor-pointer transition-colors">
+              Гинекология
+            </Badge>
+            <Badge variant="outline" className="px-4 py-2 text-sm font-medium hover:bg-primary hover:text-primary-foreground cursor-pointer transition-colors">
+              Травматология
+            </Badge>
+            <Badge variant="outline" className="px-4 py-2 text-sm font-medium hover:bg-primary hover:text-primary-foreground cursor-pointer transition-colors">
+              Эндокринология
+            </Badge>
+            <Badge variant="outline" className="px-4 py-2 text-sm font-medium hover:bg-primary hover:text-primary-foreground cursor-pointer transition-colors">
+              Дерматология
+            </Badge>
+          </div>
+        </div>
+      </section>
+
+      {/* Popular Veterinarians Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-muted/20">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-foreground mb-4">Популярные ветеринары</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Лучшие специалисты по отзывам наших клиентов
+            </p>
+          </div>
+          <FeaturedVetsSection />
+        </div>
+      </section>
+
+      {/* Recommended Clinics Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-foreground mb-4">Рекомендуемые клиники</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Топ-рейтинговые ветеринарные клиники с лучшим обслуживанием
+            </p>
+          </div>
+          <FeaturedClinicsSection />
         </div>
       </section>
 

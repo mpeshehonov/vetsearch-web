@@ -40,9 +40,12 @@ export async function updateSession(request: NextRequest) {
 
   // IMPORTANT: If you remove getUser() and you use server-side rendering
   // with the Supabase client, your users may be randomly logged out.
+  console.log("[DEBUG] Middleware: Checking path:", request.nextUrl.pathname)
+  console.log("[DEBUG] Middleware: Request cookies:", request.cookies.getAll().filter(c => c.name.includes('supabase')).length, "Supabase cookies")
   const {
     data: { user },
   } = await supabase.auth.getUser()
+  console.log("[DEBUG] Middleware: User found:", !!user, user?.email)
 
   if (
     (!user && request.nextUrl.pathname.startsWith("/dashboard")) ||

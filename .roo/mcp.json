@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "postgrest": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-postgrest@latest",
+        "--apiUrl",
+        "https://supabase-vet-pro.supabase.co/rest/v1",
+        "--apiKey",
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0cmlncGRrdWt0Z2tld2tmZHNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYyNDY0OTUsImV4cCI6MjA3MTgyMjQ5NX0.53OTGa0WpEstY-iedvK7ptL136gIz9krCzu8Lf00lCA",
+        "--schema",
+        "public"
+      ],
+      "alwaysAllow": [
+        "postgrestRequest",
+        "sqlToRest"
+      ]
+    }
+  }
+}
