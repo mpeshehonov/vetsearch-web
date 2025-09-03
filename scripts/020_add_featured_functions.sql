@@ -6,7 +6,6 @@ RETURNS TABLE (
   id TEXT,
   email TEXT,
   name TEXT,
-  avatar_url TEXT,
   role TEXT,
   created_at TIMESTAMP WITH TIME ZONE,
   updated_at TIMESTAMP WITH TIME ZONE,
@@ -18,38 +17,22 @@ LANGUAGE SQL
 SECURITY DEFINER
 AS $$
   SELECT
-    sub.id,
-    sub.email,
-    sub.name,
-    sub.avatar_url,
-    sub.role,
-    sub.created_at,
-    sub.updated_at,
-    sub.avg_rating,
-    sub.review_count::BIGINT,
-    c.name AS clinic_name
-  FROM (
-    SELECT
-      p.id,
-      p.email,
-      p.name,
-      p.avatar_url,
-      p.role,
-      p.created_at,
-      p.updated_at,
-      CASE
-        WHEN COUNT(r.id) > 0 THEN AVG(r.rating)::NUMERIC
-        ELSE NULL
-      END AS avg_rating,
-      COUNT(DISTINCT r.id) AS review_count
-    FROM profiles p
-    LEFT JOIN reviews r ON r.doctor_id = p.id
-    WHERE p.role = 'veterinarian'
-    GROUP BY p.id, p.email, p.name, p.avatar_url, p.role, p.created_at, p.updated_at
-  ) sub
-  LEFT JOIN clinic_veterinarians cv ON cv.veterinarian_id = sub.id
-  LEFT JOIN clinics c ON c.id = cv.clinic_id
-  ORDER BY sub.avg_rating DESC NULLS LAST
+    p.id,
+    p.email,
+    p.full_name AS name,
+    p.role,
+    p.created_at,
+    p.updated_at,
+    COALESCE(AVG(r.rating) OVER (PARTITION BY p.id), 0)::NUMERIC AS avg_rating,
+    COUNT(r.id) OVER (PARTITION BY p.id)::BIGINT AS review_count,
+    (SELECT c.name FROM clinic_veterinarians cv
+     JOIN clinics c ON c.id = cv.clinic_id
+     WHERE cv.veterinarian_id = p.id
+     ORDER BY cv.id LIMIT 1) AS clinic_name
+  FROM profiles p
+  LEFT JOIN reviews r ON r.veterinarian_id = p.id
+  WHERE p.role = 'veterinarian'
+  ORDER BY p.id
   LIMIT 10;
 $$;
 
