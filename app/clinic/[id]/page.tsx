@@ -72,35 +72,91 @@ export default function ClinicPage() {
       if (!params.id) return
 
       try {
-        // Fetch clinic details
+        // Fetch clinic details with JOIN cities
         const { data: clinicData, error: clinicError } = await supabase
-          .from("clinic_search_view")
-          .select("*")
+          .from("clinics")
+          .select(`
+            *,
+            cities (
+              name,
+              region
+            )
+          `)
           .eq("id", params.id)
           .single()
 
         if (clinicError) throw clinicError
-        setClinic(clinicData)
 
-        // Fetch services
-        const { data: servicesData, error: servicesError } = await supabase
-          .from("services")
-          .select("*")
+        // Temporarily set clinic data without counts
+        const tempClinic = {
+          ...clinicData,
+          city_name: clinicData.cities?.name || '',
+          region: clinicData.cities?.region || '',
+          specializations: clinicData.services_offered || []
+        }
+        setClinic(tempClinic)
+
+        // Fetch services via clinic_services
+        const { data: servicesDataRaw, error: servicesError } = await supabase
+          .from("clinic_services")
+          .select(`
+            price,
+            services (
+              id,
+              name,
+              description,
+              category,
+              price,
+              duration_minutes
+            )
+          `)
           .eq("clinic_id", params.id)
-          .eq("is_active", true)
-          .order("category", { ascending: true })
+          .eq("is_available", true)
+          .neq("services.is_active", false)
+          .order("services.category", { ascending: true })
+
+        const servicesData = servicesDataRaw?.map(item => ({
+          ...item.services,
+          price: item.price || item.services?.price || 0
+        })).filter(service => service.name) || []
 
         if (servicesError) throw servicesError
         setServices(servicesData || [])
 
-        // Fetch veterinarians
-        const { data: vetsData, error: vetsError } = await supabase
-          .from("veterinarian_search_view")
-          .select("*")
+        // Fetch veterinarians via clinic_veterinarians
+        const { data: vetsDataRaw, error: vetsError } = await supabase
+          .from("clinic_veterinarians")
+          .select(`
+            veterinarian_id,
+            profiles (
+              id,
+              full_name,
+              specialization,
+              bio,
+              experience_years,
+              rating,
+              reviews_count
+            )
+          `)
           .eq("clinic_id", params.id)
+          .neq("profiles.is_active", false)
+
+        const vetsData = vetsDataRaw?.map(item => ({
+          ...item.profiles,
+          rating: item.profiles?.rating || 0,
+          reviews_count: item.profiles?.reviews_count || 0,
+          experience_years: item.profiles?.experience_years || 0
+        })).filter(vet => vet.full_name) || []
 
         if (vetsError) throw vetsError
         setVeterinarians(vetsData || [])
+
+        // Update clinic with calculated counts
+        setClinic(prev => prev ? {
+          ...prev,
+          veterinarians_count: vetsData.length,
+          services_count: servicesData.length
+        } : null)
       } catch (error) {
         console.error("Ошибка загрузки данных клиники:", error)
       } finally {

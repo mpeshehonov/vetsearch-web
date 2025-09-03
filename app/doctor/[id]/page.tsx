@@ -29,12 +29,13 @@ interface Veterinarian {
   education: string
   rating: number
   reviews_count: number
-  clinic_name: string
-  clinic_address: string
-  clinic_phone: string
-  city_name: string
-  region: string
-  clinic_id: string
+  clinic_name?: string
+  clinic_address?: string
+  clinic_phone?: string
+  city_name?: string
+  region?: string
+  clinic_id?: string
+  avatar_url?: string
 }
 
 export default function DoctorPage() {
@@ -49,10 +50,52 @@ export default function DoctorPage() {
       if (!params.id) return
 
       try {
-        const { data, error } = await supabase.from("veterinarian_search_view").select("*").eq("id", params.id).single()
+        // Запрос данных врача с JOIN clinic_veterinarians, clinics, cities
+        const { data, error } = await supabase
+          .from('clinic_veterinarians')
+          .select(`
+            profiles!veterinarian_id (
+              id,
+              full_name,
+              specialization,
+              bio,
+              experience_years,
+              education,
+              rating,
+              reviews_count,
+              avatar_url
+            ),
+            clinics!clinic_id (
+              id,
+              name,
+              address,
+              phone,
+              cities!city_id (
+                name,
+                region
+              )
+            )
+          `)
+          .eq('veterinarian_id', params.id)
+          .eq('is_primary', true)
+          .single()
 
         if (error) throw error
-        setVeterinarian(data)
+
+        // Преобразование данных в формат Veterinarian
+        if (data && data.profiles && data.clinics && data.clinics.cities) {
+          const veterinarian: Veterinarian = {
+            ...data.profiles,
+            clinic_id: data.clinics.id,
+            clinic_name: data.clinics.name,
+            clinic_address: data.clinics.address,
+            clinic_phone: data.clinics.phone,
+            city_name: data.clinics.cities.name,
+            region: data.clinics.cities.region,
+            avatar_url: data.profiles.avatar_url
+          }
+          setVeterinarian(veterinarian)
+        }
       } catch (error) {
         console.error("Ошибка загрузки данных врача:", error)
       } finally {
@@ -101,7 +144,15 @@ export default function DoctorPage() {
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                  <GraduationCap className="w-8 h-8 text-primary" />
+                  {veterinarian.avatar_url ? (
+                    <img
+                      src={veterinarian.avatar_url}
+                      alt={veterinarian.full_name}
+                      className="w-16 h-16 rounded-full object-cover"
+                    />
+                  ) : (
+                    <GraduationCap className="w-8 h-8 text-primary" />
+                  )}
                 </div>
                 <div>
                   <h1 className="text-3xl font-bold text-foreground">{veterinarian.full_name}</h1>

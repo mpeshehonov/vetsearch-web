@@ -20,8 +20,8 @@ export function ReviewForm({ clinicId, veterinariansId, onSuccess }: ReviewFormP
   const [rating, setRating] = useState(0)
   const [hoveredRating, setHoveredRating] = useState(0)
   const [title, setTitle] = useState("")
-  const [comment, setComment] = useState("")
-  const [patientName, setPatientName] = useState("")
+  const [content, setContent] = useState("")
+  const [authorName, setAuthorName] = useState("")
   const [patientEmail, setPatientEmail] = useState("")
   const [loading, setLoading] = useState(false)
   const supabase = createClient()
@@ -35,13 +35,12 @@ export function ReviewForm({ clinicId, veterinariansId, onSuccess }: ReviewFormP
       const { error } = await supabase.from("reviews").insert({
         clinic_id: clinicId || null,
         veterinarian_id: veterinariansId || null,
-        patient_name: patientName,
+        author_name: authorName,
         patient_email: patientEmail,
         rating,
         title,
-        comment,
+        content,
         is_verified: false,
-        is_published: true,
       })
 
       if (error) throw error
@@ -79,11 +78,11 @@ export function ReviewForm({ clinicId, veterinariansId, onSuccess }: ReviewFormP
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="patientName">Ваше имя</Label>
+          <Label htmlFor="authorName">Ваше имя</Label>
           <Input
-            id="patientName"
-            value={patientName}
-            onChange={(e) => setPatientName(e.target.value)}
+            id="authorName"
+            value={authorName}
+            onChange={(e) => setAuthorName(e.target.value)}
             placeholder="Введите ваше имя"
             required
           />
@@ -112,11 +111,11 @@ export function ReviewForm({ clinicId, veterinariansId, onSuccess }: ReviewFormP
       </div>
 
       <div>
-        <Label htmlFor="comment">Подробный отзыв</Label>
+        <Label htmlFor="content">Подробный отзыв</Label>
         <Textarea
-          id="comment"
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
+          id="content"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
           placeholder="Расскажите подробнее о вашем опыте посещения..."
           rows={4}
           required

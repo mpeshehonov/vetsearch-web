@@ -8,10 +8,10 @@ import { Star, ThumbsUp, Flag } from "lucide-react"
 
 interface Review {
   id: string
-  patient_name: string
+  author_name: string
   rating: number
   title: string
-  comment: string
+  content: string
   created_at: string
   is_verified: boolean
 }
@@ -31,7 +31,7 @@ export function ReviewsList({ clinicId, veterinarianId }: ReviewsListProps) {
     const fetchReviews = async () => {
       setLoading(true)
       try {
-        let query = supabase.from("reviews").select("*").eq("is_published", true)
+        let query = supabase.from("reviews").select("*")
 
         if (clinicId) {
           query = query.eq("clinic_id", clinicId)
@@ -132,7 +132,7 @@ export function ReviewsList({ clinicId, veterinarianId }: ReviewsListProps) {
             <div className="flex items-start justify-between mb-3">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-medium">{review.patient_name}</span>
+                  <span className="font-medium">{review.author_name}</span>
                   {review.is_verified && (
                     <Badge variant="secondary" className="text-xs">
                       Проверенный отзыв
@@ -159,7 +159,7 @@ export function ReviewsList({ clinicId, veterinarianId }: ReviewsListProps) {
             </div>
 
             <h4 className="font-medium mb-2">{review.title}</h4>
-            <p className="text-muted-foreground mb-4 whitespace-pre-wrap">{review.comment}</p>
+            <p className="text-muted-foreground mb-4 whitespace-pre-wrap">{review.content}</p>
 
             <div className="flex items-center gap-4">
               <Button variant="ghost" size="sm" className="text-muted-foreground">
