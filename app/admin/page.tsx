@@ -7,6 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Link from "next/link"
+import { EditUserDialog } from "@/components/admin/edit-user-dialog"
+import { EditServiceDialog } from "@/components/admin/edit-service-dialog"
 
 export default async function AdminPage() {
   const supabase = await createClient()
@@ -28,6 +30,38 @@ export default async function AdminPage() {
   const { data: petsCount } = await supabase.from("pets").select("id", { count: "exact" })
   const { data: appointmentsCount } = await supabase.from("appointments").select("id", { count: "exact" })
   const { data: servicesCount } = await supabase.from("services").select("id", { count: "exact" })
+
+  // Расчет дополнительной статистики
+  const startOfMonth = new Date()
+  startOfMonth.setDate(1)
+  startOfMonth.setHours(0, 0, 0, 0)
+
+  // Доходы за текущий месяц
+  const { data: monthlyRevenue } = await supabase
+    .from("appointments")
+    .select("total_cost, status")
+    .gte("appointment_date", startOfMonth.toISOString().split('T')[0])
+    .eq("status", "Завершен")
+
+  const totalRevenue = monthlyRevenue?.reduce((sum, app) => sum + (app.total_cost || 0), 0) || 0
+
+  // Загрузка врачей (количество записей за текущий месяц)
+  const { data: vetsLoad } = await supabase
+    .from("appointments")
+    .select("veterinarian_id, profiles(full_name)")
+    .gte("appointment_date", startOfMonth.toISOString().split('T')[0])
+
+  // Количество активных врачей
+  const { data: activeVets } = await supabase
+    .from("profiles")
+    .select("full_name, specialization")
+    .eq("role", "veterinarian")
+    .eq("is_active", true)
+
+  // Среднее количество записей на врача
+  const avgLoadPerVet = vetsLoad && vetsLoad.length && activeVets && activeVets.length
+    ? Math.round(vetsLoad.length / activeVets.length)
+    : 0
 
   // Получаем список пользователей
   const { data: users } = await supabase
@@ -150,37 +184,37 @@ export default async function AdminPage() {
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Записи</CardTitle>
+                  <CardTitle className="text-sm font-medium">Доходы</CardTitle>
                   <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M8 7V3a4 4 0 118 0v4m-4 8a2 2 0 11-4 0 2 2 0 014 0z"
+                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
                     />
                   </svg>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{appointmentsCount?.length || 0}</div>
-                  <p className="text-xs text-muted-foreground">Всего записей на прием</p>
+                  <div className="text-2xl font-bold">₽{totalRevenue.toLocaleString()}</div>
+                  <p className="text-xs text-muted-foreground">Доходы за текущий месяц</p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Услуги</CardTitle>
+                  <CardTitle className="text-sm font-medium">Загрузка</CardTitle>
                   <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                     />
                   </svg>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{servicesCount?.length || 0}</div>
-                  <p className="text-xs text-muted-foreground">Доступных услуг</p>
+                  <div className="text-2xl font-bold">{avgLoadPerVet}</div>
+                  <p className="text-xs text-muted-foreground">Средняя нагрузка на врача</p>
                 </CardContent>
               </Card>
             </div>
@@ -237,9 +271,10 @@ export default async function AdminPage() {
                             <Badge variant={user.is_active ? "secondary" : "outline"}>
                               {user.is_active ? "Активен" : "Неактивен"}
                             </Badge>
-                            <Button variant="outline" size="sm" className="bg-transparent">
-                              Редактировать
-                            </Button>
+                            <EditUserDialog
+                              user={user}
+                              onUserUpdated={() => window.location.reload()}
+                            />
                           </div>
                         </div>
                       ))}
@@ -287,9 +322,10 @@ export default async function AdminPage() {
                             <Badge variant={service.is_active ? "secondary" : "outline"}>
                               {service.is_active ? "Активна" : "Неактивна"}
                             </Badge>
-                            <Button variant="outline" size="sm" className="bg-transparent">
-                              Редактировать
-                            </Button>
+                            <EditServiceDialog
+                              service={service}
+                              onServiceUpdated={() => window.location.reload()}
+                            />
                           </div>
                         </div>
                       ))}

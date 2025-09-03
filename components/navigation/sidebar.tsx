@@ -132,7 +132,7 @@ export function Sidebar({ userRole = "receptionist" }: SidebarProps) {
                   />
                 </svg>
               </div>
-              <h1 className="text-lg font-semibold text-gray-900">ВетКлиника</h1>
+              <h1 className="text-lg font-semibold text-gray-900">ВетПоиск</h1>
             </div>
           )}
           <Button

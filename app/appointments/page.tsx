@@ -1,67 +1,164 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import { redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
+import { createClient } from "@/lib/supabase/client"
 import { Sidebar } from "@/components/navigation/sidebar"
 import { Header } from "@/components/navigation/header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
 
-export default async function AppointmentsPage() {
-  const supabase = await createClient()
+interface AppointmentData {
+  id: string
+  appointment_date: string
+  appointment_time: string
+  duration_minutes: number
+  status: string
+  reason: string
+  pets: {
+    id: string
+    name: string
+    species: string
+    pet_owners: {
+      id: string
+      full_name: string
+      phone: string
+    }
+  } | null
+  profiles: {
+    id: string
+    full_name: string
+    specialization: string
+  } | null
+  services: {
+    id: string
+    name: string
+    price: number
+  } | null
+}
 
-  const { data, error } = await supabase.auth.getUser()
-  if (error || !data?.user) {
-    redirect("/auth/login")
-  }
+export default function AppointmentsPage() {
+  const [appointments, setAppointments] = useState<AppointmentData[]>([])
+  const [filteredAppointments, setFilteredAppointments] = useState<AppointmentData[]>([])
+  const [searchQuery, setSearchQuery] = useState("")
+  const [dateFilter, setDateFilter] = useState("")
+  const [statusFilter, setStatusFilter] = useState("")
+  const [loading, setLoading] = useState(true)
+  const [profile, setProfile] = useState<any>(null)
 
-  const { data: profile } = await supabase.from("profiles").select("*").eq("id", data.user.id).single()
+  useEffect(() => {
+    const fetchData = async () => {
+      const supabase = createClient()
 
-  // Получаем записи на прием с информацией о пациентах, владельцах и ветеринарах
-  const { data: appointments } = await supabase
-    .from("appointments")
-    .select(`
-      *,
-      pets (
-        id,
-        name,
-        species,
-        pet_owners (
-          id,
-          full_name,
-          phone
-        )
-      ),
-      profiles (
-        id,
-        full_name,
-        specialization
-      ),
-      services (
-        id,
-        name,
-        price
+      const { data, error } = await supabase.auth.getUser()
+      if (error || !data?.user) {
+        redirect("/auth/login")
+      }
+
+      const { data: profileData } = await supabase.from("profiles").select("*").eq("id", data.user.id).single()
+      setProfile(profileData)
+
+      const { data: appointmentsData } = await supabase
+        .from("appointments")
+        .select(`
+          *,
+          pets (
+            id,
+            name,
+            species,
+            pet_owners (
+              id,
+              full_name,
+              phone
+            )
+          ),
+          profiles (
+            id,
+            full_name,
+            specialization
+          ),
+          services (
+            id,
+            name,
+            price
+          )
+        `)
+        .order("appointment_date", { ascending: true })
+        .order("appointment_time", { ascending: true })
+
+      if (appointmentsData) {
+        setAppointments(appointmentsData)
+        setFilteredAppointments(appointmentsData)
+      }
+      setLoading(false)
+    }
+
+    fetchData()
+  }, [])
+
+  // Фильтрация записей
+  useEffect(() => {
+    let filtered = appointments
+
+    // Поиск по имени
+    if (searchQuery) {
+      filtered = filtered.filter(apt =>
+        apt.pets?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        apt.pets?.pet_owners?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        apt.profiles?.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
       )
-    `)
-    .order("appointment_date", { ascending: true })
-    .order("appointment_time", { ascending: true })
+    }
 
-  // Получаем записи на сегодня
+    // Фильтр по дате
+    if (dateFilter) {
+      filtered = filtered.filter(apt => apt.appointment_date === dateFilter)
+    }
+
+    // Фильтр по статусу
+    if (statusFilter) {
+      filtered = filtered.filter(apt => apt.status === statusFilter)
+    }
+
+    setFilteredAppointments(filtered)
+  }, [searchQuery, dateFilter, statusFilter, appointments])
+
+  // Получаем фильтрованные записи для сегодня и завтра
   const today = new Date().toISOString().split("T")[0]
-  const todayAppointments = appointments?.filter((apt) => apt.appointment_date === today) || []
+  const allTodayAppointments = appointments.filter((apt) => apt.appointment_date === today)
+  const todayAppointments = filteredAppointments.filter((apt) => apt.appointment_date === today)
 
   // Получаем записи на завтра
   const tomorrow = new Date()
   tomorrow.setDate(tomorrow.getDate() + 1)
   const tomorrowDate = tomorrow.toISOString().split("T")[0]
-  const tomorrowAppointments = appointments?.filter((apt) => apt.appointment_date === tomorrowDate) || []
+  const allTomorrowAppointments = appointments.filter((apt) => apt.appointment_date === tomorrowDate)
+  const tomorrowAppointments = filteredAppointments.filter((apt) => apt.appointment_date === tomorrowDate)
 
   const handleSignOut = async () => {
-    "use server"
-    const supabase = await createClient()
+    const supabase = createClient()
     await supabase.auth.signOut()
     redirect("/auth/login")
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-screen bg-gray-50">
+        <Sidebar userRole={profile?.role} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header user={profile} onSignOut={handleSignOut} />
+          <main className="flex-1 overflow-y-auto p-6">
+            <div className="max-w-7xl mx-auto">
+              <div className="text-center py-8">Загрузка...</div>
+            </div>
+          </main>
+        </div>
+      </div>
+    )
   }
 
   const getStatusBadge = (status: string) => {
@@ -123,10 +220,55 @@ export default async function AppointmentsPage() {
               </div>
             </div>
 
+            {/* Фильтры и поиск */}
+            <Card className="mb-6">
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Поиск</label>
+                    <Input
+                      placeholder="Поиск по имени, владельцу или врачу..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Фильтр по дате</label>
+                    <Input
+                      type="date"
+                      value={dateFilter}
+                      onChange={(e) => setDateFilter(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Фильтр по статусу</label>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Все статусы" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">Все статусы</SelectItem>
+                        <SelectItem value="scheduled">Запланирован</SelectItem>
+                        <SelectItem value="confirmed">Подтвержден</SelectItem>
+                        <SelectItem value="in_progress">В процессе</SelectItem>
+                        <SelectItem value="completed">Завершен</SelectItem>
+                        <SelectItem value="cancelled">Отменен</SelectItem>
+                        <SelectItem value="no_show">Не явился</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             <Tabs defaultValue="today" className="space-y-6">
               <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="today">Сегодня ({todayAppointments.length})</TabsTrigger>
-                <TabsTrigger value="tomorrow">Завтра ({tomorrowAppointments.length})</TabsTrigger>
+                <TabsTrigger value="today">
+                  Сегодня ({allTodayAppointments.length}{searchQuery || dateFilter || statusFilter ? ` / ${todayAppointments.length}` : ''})
+                </TabsTrigger>
+                <TabsTrigger value="tomorrow">
+                  Завтра ({allTomorrowAppointments.length}{searchQuery || dateFilter || statusFilter ? ` / ${tomorrowAppointments.length}` : ''})
+                </TabsTrigger>
                 <TabsTrigger value="week">Неделя</TabsTrigger>
                 <TabsTrigger value="all">Все записи</TabsTrigger>
               </TabsList>
@@ -157,7 +299,9 @@ export default async function AppointmentsPage() {
                   <CardContent>
                     {todayAppointments.length > 0 ? (
                       <div className="space-y-4">
-                        {todayAppointments.map((appointment) => (
+                        {filteredAppointments
+                          .filter(apt => apt.appointment_date === today)
+                          .map((appointment) => (
                           <div
                             key={appointment.id}
                             className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
@@ -247,7 +391,9 @@ export default async function AppointmentsPage() {
                   <CardContent>
                     {tomorrowAppointments.length > 0 ? (
                       <div className="space-y-4">
-                        {tomorrowAppointments.map((appointment) => (
+                        {filteredAppointments
+                          .filter(apt => apt.appointment_date === tomorrowDate)
+                          .map((appointment) => (
                           <div
                             key={appointment.id}
                             className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
@@ -328,9 +474,9 @@ export default async function AppointmentsPage() {
                     <CardDescription>Полный список всех записей на прием</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {appointments && appointments.length > 0 ? (
+                    {filteredAppointments && filteredAppointments.length > 0 ? (
                       <div className="space-y-4">
-                        {appointments.map((appointment) => (
+                        {filteredAppointments.map((appointment) => (
                           <div
                             key={appointment.id}
                             className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"

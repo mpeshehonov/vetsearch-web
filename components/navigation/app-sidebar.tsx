@@ -131,7 +131,7 @@ export function AppSidebar({ userRole = "receptionist" }: AppSidebarProps) {
               />
             </svg>
           </div>
-          <h1 className="text-lg font-semibold text-gray-900">ВетКлиника</h1>
+          <h1 className="text-lg font-semibold text-gray-900">ВетПоиск</h1>
         </div>
       </SidebarHeader>
 
@@ -167,7 +167,7 @@ export function AppSidebar({ userRole = "receptionist" }: AppSidebarProps) {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-gray-200">
-        <div className="p-2 text-xs text-gray-500 text-center">© 2024 ВетКлиника</div>
+        <div className="p-2 text-xs text-gray-500 text-center">© 2024 ВетПоиск</div>
       </SidebarFooter>
     </Sidebar>
   )

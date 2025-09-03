@@ -219,7 +219,7 @@ export default function HomePage() {
               <a href="#clinics" className="text-muted-foreground hover:text-primary transition-colors">
                 Клиники
               </a>
-              <a href="#doctors" className="text-muted-foreground hover:text-primary transition-colors">
+              <a href="#clinics" className="text-muted-foreground hover:text-primary transition-colors">
                 Врачи
               </a>
               <Link href="/for-clinics" className="text-muted-foreground hover:text-primary transition-colors">
@@ -244,7 +244,7 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section with Search */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-card via-muted/30 to-accent/10">
+      <section id="clinics" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-card via-muted/30 to-accent/10">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 text-balance">
             Найдите лучшего

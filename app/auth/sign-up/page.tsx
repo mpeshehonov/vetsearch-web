@@ -104,7 +104,7 @@ export default function SignUpPage() {
               />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">ВетКлиника</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">ВетПоиск</h1>
           <p className="text-gray-600">Регистрация нового сотрудника</p>
         </div>
 
@@ -261,6 +261,17 @@ export default function SignUpPage() {
               <Link href="/auth/login" className="text-emerald-600 hover:text-emerald-700 font-medium">
                 Войти
               </Link>
+            </div>
+
+            <div className="mt-4 flex justify-center">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.back()}
+                className="text-gray-600 border-gray-300 hover:bg-gray-50"
+              >
+                Назад
+              </Button>
             </div>
           </CardContent>
         </Card>

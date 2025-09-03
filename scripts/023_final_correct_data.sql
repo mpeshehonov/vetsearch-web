@@ -23,7 +23,7 @@ INSERT INTO services (name, description, price, duration_minutes, category, is_a
 -- 2. Создаем клиники в разных городах
 INSERT INTO clinics (name, description, address, phone, email, website, city_id, latitude, longitude, rating, reviews_count, is_active, working_hours) 
 SELECT 
-    'ВетКлиника "Здоровые Лапки"',
+    'ВетПоиск "Здоровые Лапки"',
     'Современная ветеринарная клиника с полным спектром услуг для ваших питомцев',
     'ул. Пушкина, 15',
     '+7 (495) 123-45-67',
@@ -142,7 +142,7 @@ SELECT
     c.id, 'Мария И.', 'maria.i@email.ru', 'Отличная клиника!', 
     'Очень довольна обслуживанием. Врачи профессиональные, персонал вежливый. Мурка чувствует себя отлично после лечения.', 
     5, true, 12
-FROM clinics c WHERE c.name = 'ВетКлиника "Здоровые Лапки"' LIMIT 1;
+FROM clinics c WHERE c.name = 'ВетПоиск "Здоровые Лапки"' LIMIT 1;
 
 INSERT INTO reviews (clinic_id, author_name, author_email, title, content, rating, is_verified, is_helpful_count)
 SELECT 

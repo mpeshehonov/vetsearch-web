@@ -130,7 +130,7 @@ ON CONFLICT (name, region) DO NOTHING;
 -- Вставка тестовых клиник
 INSERT INTO clinics (name, description, address, phone, email, city_id, working_hours, rating, reviews_count) VALUES
 (
-    'ВетКлиника "Доброе сердце"',
+    'ВетПоиск "Доброе сердце"',
     'Современная ветеринарная клиника с полным спектром услуг для ваших питомцев',
     'ул. Пушкина, д. 15',
     '+7 (495) 123-45-67',

@@ -40,7 +40,7 @@ INSERT INTO clinics (name, address, phone, email, description, rating, reviews_c
 ('Клиника "Лапки"', 'пр. Невский, 78', '+7 (812) 987-65-43', 'contact@lapki.spb.ru', 'Семейная ветклиника с индивидуальным подходом', 4.6, 89, (SELECT id FROM cities WHERE name = 'Санкт-Петербург' LIMIT 1), '{"пн-сб": "8:00-20:00", "вс": "10:00-16:00"}', 'https://lapki.spb.ru'),
 ('ВетМед Новосибирск', 'ул. Красный проспект, 156', '+7 (383) 555-12-34', 'info@vetmed-nsk.ru', 'Крупнейшая ветклиника Сибири с современным оборудованием', 4.7, 203, (SELECT id FROM cities WHERE name = 'Новосибирск' LIMIT 1), '{"пн-вс": "24/7"}', 'https://vetmed-nsk.ru'),
 ('Клиника "Айболит"', 'ул. Мира, 23', '+7 (495) 777-88-99', 'help@aibolit.vet', 'Экстренная ветеринарная помощь круглосуточно', 4.5, 134, (SELECT id FROM cities WHERE name = 'Москва' LIMIT 1), '{"пн-вс": "24/7"}', 'https://aibolit.vet'),
-('ВетКлиника "Друг"', 'ул. Московская, 67', '+7 (812) 444-55-66', 'info@drug-vet.ru', 'Специализируемся на лечении экзотических животных', 4.9, 78, (SELECT id FROM cities WHERE name = 'Санкт-Петербург' LIMIT 1), '{"пн-пт": "9:00-19:00", "сб": "10:00-16:00", "вс": "выходной"}', 'https://drug-vet.ru');
+('ВетПоиск "Друг"', 'ул. Московская, 67', '+7 (812) 444-55-66', 'info@drug-vet.ru', 'Специализируемся на лечении экзотических животных', 4.9, 78, (SELECT id FROM cities WHERE name = 'Санкт-Петербург' LIMIT 1), '{"пн-пт": "9:00-19:00", "сб": "10:00-16:00", "вс": "выходной"}', 'https://drug-vet.ru');
 
 -- Создаем связи клиник с услугами (все клиники предоставляют все услуги)
 INSERT INTO clinic_services (clinic_id, service_id)
@@ -76,7 +76,7 @@ INSERT INTO appointments (clinic_id, pet_id, service_id, appointment_date, appoi
 ((SELECT id FROM clinics WHERE name = 'Клиника "Лапки"' LIMIT 1), (SELECT id FROM pets WHERE name = 'Барсик'), (SELECT id FROM services WHERE name = 'УЗИ брюшной полости'), CURRENT_DATE + INTERVAL '2 days', '14:30', 'Запланирована', 'Проверка почек', 2200),
 ((SELECT id FROM clinics WHERE name = 'ВетМед Новосибирск' LIMIT 1), (SELECT id FROM pets WHERE name = 'Рекс'), (SELECT id FROM services WHERE name = 'Рентген'), CURRENT_DATE + INTERVAL '3 days', '16:00', 'Запланирована', 'Рентген суставов', 2500),
 ((SELECT id FROM clinics WHERE name = 'Клиника "Айболит"' LIMIT 1), (SELECT id FROM pets WHERE name = 'Белка'), (SELECT id FROM services WHERE name = 'Вакцинация'), CURRENT_DATE - INTERVAL '5 days', '11:00', 'Завершена', 'Ревакцинация', 1800),
-((SELECT id FROM clinics WHERE name = 'ВетКлиника "Друг"' LIMIT 1), (SELECT id FROM pets WHERE name = 'Джек'), (SELECT id FROM services WHERE name = 'Груминг собак'), CURRENT_DATE - INTERVAL '10 days', '15:00', 'Завершена', 'Полный груминг', 4500);
+((SELECT id FROM clinics WHERE name = 'ВетПоиск "Друг"' LIMIT 1), (SELECT id FROM pets WHERE name = 'Джек'), (SELECT id FROM services WHERE name = 'Груминг собак'), CURRENT_DATE - INTERVAL '10 days', '15:00', 'Завершена', 'Полный груминг', 4500);
 
 -- Создаем отзывы
 INSERT INTO reviews (clinic_id, pet_owner_id, rating, comment, is_verified, created_at) VALUES
@@ -84,7 +84,7 @@ INSERT INTO reviews (clinic_id, pet_owner_id, rating, comment, is_verified, crea
 ((SELECT id FROM clinics WHERE name = 'Клиника "Лапки"' LIMIT 1), (SELECT id FROM pet_owners WHERE full_name = 'Петрова Анна Владимировна'), 4, 'Хорошая клиника, но долго ждали приема. Врач компетентный, Барсику помогли.', true, CURRENT_TIMESTAMP - INTERVAL '5 days'),
 ((SELECT id FROM clinics WHERE name = 'ВетМед Новосибирск' LIMIT 1), (SELECT id FROM pet_owners WHERE full_name = 'Сидоров Михаил Александрович'), 5, 'Современное оборудование, профессиональные врачи. Рекса обследовали очень тщательно.', true, CURRENT_TIMESTAMP - INTERVAL '7 days'),
 ((SELECT id FROM clinics WHERE name = 'Клиника "Айболит"' LIMIT 1), (SELECT id FROM pet_owners WHERE full_name = 'Козлова Елена Дмитриевна'), 4, 'Круглосуточная работа - это большой плюс. Белке сделали прививку быстро и качественно.', true, CURRENT_TIMESTAMP - INTERVAL '12 days'),
-((SELECT id FROM clinics WHERE name = 'ВетКлиника "Друг"' LIMIT 1), (SELECT id FROM pet_owners WHERE full_name = 'Морозов Алексей Игоревич'), 5, 'Лучшая клиника в городе! Джека привели на груминг - результат превосходный. Персонал очень дружелюбный.', true, CURRENT_TIMESTAMP - INTERVAL '15 days'),
+((SELECT id FROM clinics WHERE name = 'ВетПоиск "Друг"' LIMIT 1), (SELECT id FROM pet_owners WHERE full_name = 'Морозов Алексей Игоревич'), 5, 'Лучшая клиника в городе! Джека привели на груминг - результат превосходный. Персонал очень дружелюбный.', true, CURRENT_TIMESTAMP - INTERVAL '15 days'),
 ((SELECT id FROM clinics WHERE name = 'ВетЦентр "Здоровье"' LIMIT 1), (SELECT id FROM pet_owners WHERE full_name = 'Лебедев Дмитрий Петрович'), 4, 'Хорошие врачи, но цены высоковаты. Графу помогли с артритом.', true, CURRENT_TIMESTAMP - INTERVAL '20 days'),
 ((SELECT id FROM clinics WHERE name = 'Клиника "Лапки"' LIMIT 1), (SELECT id FROM pet_owners WHERE full_name = 'Соколова Мария Сергеевна'), 5, 'Принцессу привожу сюда уже несколько лет. Всегда довольна обслуживанием!', true, CURRENT_TIMESTAMP - INTERVAL '25 days');
 

@@ -17,7 +17,7 @@ export default function CheckEmailPage() {
               />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">ВетКлиника</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">ВетПоиск</h1>
         </div>
 
         <Card className="shadow-lg border-0">

@@ -116,6 +116,17 @@ export default function LoginPage() {
                 Зарегистрироваться
               </Link>
             </div>
+
+            <div className="mt-4 flex justify-center">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.back()}
+                className="text-gray-600 border-gray-300 hover:bg-gray-50"
+              >
+                Назад
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
